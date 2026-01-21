@@ -171,7 +171,8 @@ grid.glyph(info)
     This means that it is now possible to make use of variable
     fonts when drawing text in R graphics
     (in the development version of R),
-    although support is currently limited to Cairo-based graphics devices
+    although, at the time of writing,
+    support is limited to Cairo-based graphics devices
     (except for <code>cairo_pdf()</code>) and the <code>quartz()</code>
     graphics device.
   </p>
@@ -207,8 +208,9 @@ cat("<pre>",
   ]]></rcode>
     <p>
     A variable font is different because it effectively contains
-    many different font variations within a single font file.
-    The font provides a set of <emph>axes</emph> and we are able
+    different font variations within a single font file
+    (and allows for many more variations).
+    The font provides a set of <emphasis>axes</emphasis> and we are able
     to select different values for each axis to produce
     variations on the font.
   </p>
@@ -234,7 +236,7 @@ cat("<pre>",
     </li>
     </ul>
     <p>
-    In addition it is possible for a font to have a <emph>custom</emph>
+    In addition, it is possible for a font to have a <emphasis>custom</emphasis>
     axis, which could be called anything (as long as it is four
     ASCII letters, all capitals) and could take any value (as long as
     it is a number).
@@ -244,7 +246,7 @@ cat("<pre>",
     the standard <code>wght</code> axis that allows a wide range
     of font weights and a custom
     <code>CASL</code> axis that takes the values 1 or 0 and
-    allows for a <emph>casual</emph> font
+    allows for a "casual" font
     style (or not).
   </p>
     <h2>
@@ -299,7 +301,7 @@ grid.latex("t",
     so that the variable font axis information is recorded in the DVI 
     output, and <code>engine="luahbtex"</code>, so that
     the DVI output is read into R correctly.
-    It is also necessary to have a recent lualatex version with
+    It is also necessary to have a recent <code>lualatex</code> version with
     variable font support (1.17.0 at least).
   </p>
     <rcode fig.width="1" fig.height="1"><![CDATA[
@@ -314,8 +316,8 @@ grid.latex("t",
     <p>
     The next example demonstrates more complex control over the
     use of a variable font.  In this case, instead of setting up
-    an overall font weight for the text in the LaTeX fragment, 
-    we specify separate font weights
+    an overall font weight for a very simple LaTeX fragment, 
+    we have a more complex LaTeX fragment that specifies separate font weights
     for separate words.
   </p>
     <rcode fig.width="3" fig.height="1"><![CDATA[
@@ -379,10 +381,11 @@ cat("<pre>",
     map that encodes data values as the weights of region labels.
   </p>
     <p>
-    The following code uses
-    <strong>sf</strong> (<a href="#sf"/>) and <strong>dplyr</strong> (<a href="#dplyr"/>) to
+    The following code uses the
+    <strong>sf</strong> (<a href="#sf"/>) and <strong>dplyr</strong> (<a href="#dplyr"/>) 
+    packages to
     set up the data for the map. This consists
-    of youth crime rates (offenders per 100,000 population)
+    of youth crime rates (offenders per 10,000 population)
     in each police district of New Zealand
     for 2021 (from the
     <a href="https://www.justice.govt.nz/assets/Youth-Justice-Indicators-2021-FINAL.xlsx">Youth Justice Indicator Report 2021</a>).
@@ -452,10 +455,12 @@ gg + geom_sf(data=districts, aes(fill=rate), colour="white", linewidth=.6) +
   </p>
     <p>
   One problem with a choropleth map like this is that the police
-  districts differ in terms of size as well as in terms of fill colour.
+  districts differ in terms of size and shape 
+  as well as in terms of fill colour.
   This complicates the comparison of crime rates between police districts
-  because the map regions differ in terms of fill colour <emph>and</emph>
-  size <emph>and</emph> shape.
+  because the map regions differ in terms of fill colour 
+  <emphasis>and</emphasis>
+  size <emphasis>and</emphasis> shape.
   Ideally, in order to effectively compare crime rates between police
   districts, the map regions would differ only in terms of fill colour
   (and position).
@@ -514,7 +519,8 @@ labelTeX <- function(data, coords) {
     but now the crime rates are more easily compared because different
     crime rates are encoded simply as the font weights of the
     police district labels.
-    It is also easier to identify the different police districts
+    It is also easier (even for non-Kiwis)
+    to identify the different police districts
     because they are now all labelled.
   </p>
     <rcode message="FALSE"><![CDATA[
