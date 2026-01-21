@@ -1,0 +1,28 @@
+  @Manual{R,
+    title = {R: A Language and Environment for Statistical Computing},
+    author = {{R Core Team}},
+    organization = {R Foundation for Statistical Computing},
+    address = {Vienna, Austria},
+    year = {2025},
+    url = {https://www.R-project.org/},
+  }
+
+@Manual{xdvir-pkg,
+    title = {xdvir: Render 'LaTeX' in Plots},
+    author = {Paul Murrell},
+    year = {2025},
+    note = {R package version 0.2-0},
+  }
+
+@article{RJ-xdvir,
+  author = {Murrell, Paul},
+  title = {Rendering LaTeX in R},
+  journal = {The R Journal},
+  year = {2025},
+  note = {https://doi.org/10.32614/RJ-2025-028},
+  doi = {10.32614/RJ-2025-028},
+  volume = {17},
+  issue = {3},
+  issn = {2073-4859},
+  pages = {162-187}
+}

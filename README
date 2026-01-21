@@ -1,0 +1,13 @@
+
++ Addition of 'fontVariations' to glyphFont() in R 4.6.0
+
+  + Only supported by Quartz and Cairo (but not cairo_pdf()).
+
++ Addition of "luahbtex" engine to {xdvir}
+  
+  + Requires R 4.6.0 and recent lualatex
+
+    => the {xdvir} variable font examples have to run in docker container
+       or old graphics desktop (Ubuntu 24.04)
+
++ Do Brath map example ?

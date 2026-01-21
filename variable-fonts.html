@@ -1,0 +1,755 @@
+<html>
+  <head>
+<style type="text/css">
+.inline {
+  background-color: #f7f7f7;
+  border:solid 1px #B0B0B0;
+}
+.error {
+	font-weight: bold;
+	color: #FF0000;
+}
+.warning {
+	font-weight: bold;
+}
+.message {
+	font-style: italic;
+}
+.source, .output, .warning, .error, .message {
+	padding: 0 1em;
+  border:solid 1px #F7F7F7;
+}
+.source {
+  background-color: #f5f5f5;
+}
+.left {
+  text-align: left;
+}
+.right {
+  text-align: right;
+}
+.center {
+  text-align: center;
+}
+.hl.num {
+  color: #AF0F91;
+}
+.hl.sng {
+  color: #317ECC;
+}
+.hl.com {
+  color: #AD95AF;
+  font-style: italic;
+}
+.hl.opt {
+  color: #000000;
+}
+.hl.def {
+  color: #585858;
+}
+.hl.kwa {
+  color: #295F94;
+  font-weight: bold;
+}
+.hl.kwb {
+  color: #B05A65;
+}
+.hl.kwc {
+  color: #55aa55;
+}
+.hl.kwd {
+  color: #BC5A65;
+  font-weight: bold;
+}
+</style>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Variable Fonts in R Graphics</title>
+    <style type="text/css">
+    @media print {
+      body { }
+      p.img { text-align: center; page-break-inside: avoid }
+      img.CC { display: inline }
+    }
+    @media screen {
+      body { max-width: 800px; margin: auto }
+      p.img { text-align: center }
+      img.CC { display: inline }
+    }
+    p.date {
+      font-size: smaller;
+      margin: 0;
+    }
+    p.versionHistory {
+      color: gray
+    }
+    p.versionHistory a {
+      color: gray
+    }
+    p.ref {
+      text-indent: -2em;
+      padding-left: 2em;
+    }
+    p.fig {
+      text-align: left;
+    }
+    p.fig img, img.plot {
+      box-shadow: 10px 10px 20px;
+      margin-top: 10px;
+      margin-bottom: 20px;      
+    }
+  </style>
+    <script>
+MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']]
+  }
+};
+  </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+  </script>
+  </head>
+  <body>
+    <h1>Variable Fonts in R Graphics</h1>
+    <p>
+      <span style="font-style: italic">by Paul Murrell</span>
+      <a href="http://orcid.org">
+        <img alt="" src="https://www.stat.auckland.ac.nz/~paul/ORCID/ORCiD.png" style="width: 16px; height: 16px; vertical-align: middle">
+      </a>
+      <span style="font-family: mono; font-size: small">
+        <a href="http://orcid.org/0000-0002-3224-8858">http://orcid.org/0000-0002-3224-8858</a>
+      </span>
+    </p>
+    <p class="date">
+    Version 1:  
+Wednesday 21 January 2026
+  </p>
+
+
+    <hr>
+    <p><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img class="CC" alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png"></a><br><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">This document</span>
+    by <span xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName">Paul
+    Murrell</span> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative
+    Commons Attribution 4.0 International License</a>.
+  </p>
+    <hr>
+    <p>
+    This document describes the addition of support for variable fonts
+    in R, when rendering glyphs, plus changes to the CRAN package <strong>xdvir</strong> 
+    to take advantage of that new support, when rendering LaTeX fragments.
+  </p>
+    <div>
+      <h2>Table of Contents:</h2>
+      <ul style="list-style: none">
+        <li>
+          <a href="#intro">1. Introduction</a>
+        </li>
+        <li>
+          <a href="#varfonts">2. Variable fonts</a>
+        </li>
+        <li>
+          <a href="#xdvir">3. Rendering glyphs with xdvir</a>
+        </li>
+        <li>
+          <a href="#varfonts-xdvir">4. Variable fonts in xdvir</a>
+        </li>
+        <li>
+          <a href="#brathmap">5. Variable fonts in plots</a>
+        </li>
+        <li>
+          <a href="#summary">6. Acknowledgements</a>
+        </li>
+        <li>
+          <a href="#requirements">7. Technical requirements</a>
+        </li>
+        <li>
+          <a href="#Resources">8. Resources</a>
+        </li>
+        <li>
+          <a href="#references">9. References</a>
+        </li>
+      </ul>
+    </div>
+    <h2>
+      <a name="intro">1. Introduction</a>
+    </h2>
+    <p>
+    Since R version 4.3.0 (<a href="#R">R Core Team, 2025</a>), it has been possible
+    to render text from a set of typeset glyph information, using
+    functions <code>grDevices::glyphFont()</code> to specify a font,
+    <code>grDevices::grid.glyphInfo()</code> to specify glyphs within the font
+    and a position for each glyph, and
+    <code>grid::grid.glyph()</code> to do the drawing.
+    For example, the following code draws the letter "t" 
+    (glyph number 409) from (a local copy of)
+    the Google font 
+    <a href="https://fonts.google.com/specimen/Recursive">Recursive</a>.
+  </p>
+<div class="chunk" id="unnamed-chunk-3"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl def">(grid)</span>
+</pre></div>
+</div></div>
+<div class="chunk" id="unnamed-chunk-4"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl def">fontpath</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">file.path</span><span class="hl def">(</span><span class="hl kwd">getwd</span><span class="hl def">(),</span> <span class="hl sng">&quot;Fonts&quot;</span><span class="hl def">,</span> <span class="hl sng">&quot;Recursive-VariableFont.ttf&quot;</span><span class="hl def">)</span>
+</pre></div>
+</div></div>
+<div class="chunk" id="unnamed-chunk-5"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl def">font</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">glyphFont</span><span class="hl def">(fontpath,</span> <span class="hl num">0</span><span class="hl def">,</span> <span class="hl sng">&quot;Recursive&quot;</span><span class="hl def">,</span> <span class="hl num">400</span><span class="hl def">,</span> <span class="hl sng">&quot;normal&quot;</span><span class="hl def">,</span> <span class="hl kwc">PSname</span><span class="hl def">=</span><span class="hl sng">&quot;Recursive&quot;</span><span class="hl def">)</span>
+<span class="hl def">info</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">glyphInfo</span><span class="hl def">(</span><span class="hl kwc">id</span><span class="hl def">=</span><span class="hl num">409</span><span class="hl def">,</span> <span class="hl kwc">x</span><span class="hl def">=</span><span class="hl num">0</span><span class="hl def">,</span> <span class="hl kwc">y</span><span class="hl def">=</span><span class="hl num">0</span><span class="hl def">,</span> <span class="hl kwc">font</span><span class="hl def">=</span><span class="hl num">1</span><span class="hl def">,</span> <span class="hl kwc">size</span><span class="hl def">=</span><span class="hl num">10</span><span class="hl def">,</span>
+                  <span class="hl kwc">fontList</span><span class="hl def">=</span><span class="hl kwd">glyphFontList</span><span class="hl def">(font),</span> <span class="hl kwc">width</span><span class="hl def">=</span><span class="hl num">8</span><span class="hl def">,</span> <span class="hl kwc">height</span><span class="hl def">=</span><span class="hl num">12</span><span class="hl def">)</span>
+<span class="hl kwd">grid.newpage</span><span class="hl def">()</span>
+<span class="hl kwd">grid.glyph</span><span class="hl def">(info)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-5-1.png" alt="plot of chunk unnamed-chunk-5" class="plot" /></div></div>
+    <p>
+    In the development version of R, to become version 4.6.0,
+    support has been added for using variable fonts when rendering glyphs.
+    This comes in the form of a new argument called 
+    <code>variations</code> for the 
+    <code>grDevices::glyphFont()</code>
+    function, which allows variations on a font to be specified.
+    For example, the following code draws the letter "t" using the
+    Recursive font, as before, but this time specifies a very bold
+    variation of the font.  The variation <code>wght=900</code> means a weight
+    of 900 (out of 1000).  For comparison, a normal font weight is
+    typically 400 and a bold font weight is typically 700.
+  </p>
+<div class="chunk" id="unnamed-chunk-6"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl def">boldFont</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">glyphFont</span><span class="hl def">(fontpath,</span> <span class="hl num">0</span><span class="hl def">,</span> <span class="hl sng">&quot;Recursive&quot;</span><span class="hl def">,</span> <span class="hl num">400</span><span class="hl def">,</span> <span class="hl sng">&quot;normal&quot;</span><span class="hl def">,</span> <span class="hl kwc">PSname</span><span class="hl def">=</span><span class="hl sng">&quot;Recursive&quot;</span><span class="hl def">,</span>
+                      <span class="hl kwc">variations</span><span class="hl def">=</span><span class="hl kwd">c</span><span class="hl def">(</span><span class="hl kwc">wght</span><span class="hl def">=</span><span class="hl num">900</span><span class="hl def">))</span>
+<span class="hl def">info</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">glyphInfo</span><span class="hl def">(</span><span class="hl kwc">id</span><span class="hl def">=</span><span class="hl num">409</span><span class="hl def">,</span> <span class="hl kwc">x</span><span class="hl def">=</span><span class="hl num">0</span><span class="hl def">,</span> <span class="hl kwc">y</span><span class="hl def">=</span><span class="hl num">0</span><span class="hl def">,</span> <span class="hl kwc">font</span><span class="hl def">=</span><span class="hl num">1</span><span class="hl def">,</span> <span class="hl kwc">size</span><span class="hl def">=</span><span class="hl num">10</span><span class="hl def">,</span>
+                  <span class="hl kwc">fontList</span><span class="hl def">=</span><span class="hl kwd">glyphFontList</span><span class="hl def">(boldFont),</span> <span class="hl kwc">width</span><span class="hl def">=</span><span class="hl num">8</span><span class="hl def">,</span> <span class="hl kwc">height</span><span class="hl def">=</span><span class="hl num">12</span><span class="hl def">)</span>
+<span class="hl kwd">grid.newpage</span><span class="hl def">()</span>
+<span class="hl kwd">grid.glyph</span><span class="hl def">(info)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-6-1.png" alt="plot of chunk unnamed-chunk-6" class="plot" /></div></div>
+    <p>
+    This means that it is now possible to make use of variable
+    fonts when drawing text in R graphics
+    (in the development version of R),
+    although support is currently limited to Cairo-based graphics devices
+    (except for <code>cairo_pdf()</code>) and the <code>quartz()</code>
+    graphics device.
+  </p>
+    <p>
+    However, we may be left wondering what we could use variable fonts
+    for and how we might use them without specifying every single 
+    glyph and every single glyph position for the text that we want 
+    to draw.
+  </p>
+    <p>
+    This report explains what variable fonts are,
+    demonstrates new features in the <strong>xdvir</strong> package that
+    allow users to make use of variable fonts when drawing 
+    text in R graphics, and provides an example use of 
+    variable fonts in statistical plots.
+  </p>
+    <h2>
+      <a name="varfonts">2. Variable fonts</a>
+    </h2>
+    <p>
+    Most fonts are available in multiple variations,
+    such as italic or bold,
+    but usually each variation is provided as a separate font file.
+    For example, on the system used to build this report,
+    there are four variations on the <code>NotoSans</code> font
+    in four separate files:
+  </p>
+<pre>
+/usr/share/fonts/truetype/noto/NotoSans-Italic.ttf
+/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf
+/usr/share/fonts/truetype/noto/NotoSans-BoldItalic.ttf
+/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf
+</pre>
+
+    <p>
+    A variable font is different because it effectively contains
+    many different font variations within a single font file.
+    The font provides a set of <emph>axes</emph> and we are able
+    to select different values for each axis to produce
+    variations on the font.
+  </p>
+    <p>
+    There are five standard axes:
+  </p>
+    <ul>
+      <li>
+<code>wght</code>:  The weight of the font, ranging from 1 to 1000,
+      with normal weight typically 400 and bold typically 700.
+    </li>
+      <li>
+<code>slnt</code>:  The slant of the font, ranging from -90 to 90.
+      This is a constant angle, distinct from italic variations of a font.
+    </li>
+      <li>
+<code>wdth</code>:  The width of the font, with a lower bound of 0 and
+      no upper bound.  This allows condensed and extended variants
+      of a font.
+    </li>
+      <li>
+<code>ital</code>:  The italic style of the font, ranging from 0 to 1.
+    </li>
+      <li>
+<code>opsz</code>:  The optical size of the font, with a lower 
+      bound of 0 and no upper bound.  This allows for fine control of the
+      details of glyphs when text is rendered at different sizes.
+    </li>
+    </ul>
+    <p>
+    In addition it is possible for a font to have a <emph>custom</emph>
+    axis, which could be called anything (as long as it is four
+    ASCII letters, all capitals) and could take any value (as long as
+    it is a number).
+  </p>
+    <p>
+    For example, the Recursive font that we have been using has 
+    the standard <code>wght</code> axis that allows a wide range
+    of font weights and a custom
+    <code>CASL</code> axis that takes the values 1 or 0 and
+    allows for a <emph>casual</emph> font
+    style (or not).
+  </p>
+    <h2>
+      <a name="xdvir">3. Rendering glyphs with <strong>xdvir</strong></a>
+    </h2>
+    <p>
+    Using <code>grid.glyph()</code> directly, as
+    demonstrated in the <a href="#intro">Introduction</a>, is difficult because of the need
+    to specify a font by file name and
+    each glyph within the font by number, along with precise locations for
+    each glyph.
+    It is easier to use a package that figures out font file names,
+    glyph numbers and
+    positions for us.
+    One example is the <strong>xdvir</strong> package (<a href="#xdvir-pkg">Murrell, 2025b</a>),
+    which can render LaTeX fragments (with glyph rendering under the hood).
+    For example, the following code draws the letter "t" using the
+    Recursive font, just like in the first example of the
+    <a href="#intro">Introduction</a>, but with much less detail required from the user.
+  </p>
+<div class="chunk" id="unnamed-chunk-8"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl def">(xdvir)</span>
+</pre></div>
+</div></div>
+<div class="chunk" id="unnamed-chunk-9"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">grid.newpage</span><span class="hl def">()</span>
+<span class="hl kwd">grid.latex</span><span class="hl def">(</span><span class="hl sng">&quot;t&quot;</span><span class="hl def">,</span>
+           <span class="hl kwc">packages</span><span class="hl def">=</span><span class="hl kwd">fontspecPackage</span><span class="hl def">(</span><span class="hl kwc">font</span><span class="hl def">=fontpath),</span>
+           <span class="hl kwc">gp</span><span class="hl def">=</span><span class="hl kwa">NULL</span><span class="hl def">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-9-1.png" alt="plot of chunk unnamed-chunk-9" class="plot" /></div></div>
+    <h2>
+      <a name="varfonts-xdvir">4. Variable fonts in <strong>xdvir</strong></a>
+    </h2>
+    <p>
+    Version 0.2-0 of the <strong>xdvir</strong> package 
+    has added support for variable fonts (in LaTeX fragements).
+    This takes two forms:  first of all, there are new arguments
+    to the <code>fontspecPackage()</code> function that help with
+    generating LaTeX fragments that make use of variable fonts;
+    and secondly, there is a new <code>"luahbtex"</code> TeX engine
+    that can comprehend the DVI output that is generated 
+    from LaTeX code that makes use of variable fonts.
+    For details about LaTeX packages and TeX engines in the
+    <strong>xdvir</strong> package, see <a href="#RJ-xdvir">Murrell, 2025a</a>.
+  </p>
+    <p>
+    For example, the following code draws the letter "t"
+    using the Recursive font with a weight of 900.
+    In order to set the font weight to 900, 
+    it is necessary not only to specify 
+    <code>axes=c(wght=900)</code>,
+    but also to specify <code>renderer="harfbuzz"</code>,
+    so that the variable font axis information is recorded in the DVI 
+    output, and <code>engine="luahbtex"</code>, so that
+    the DVI output is read into R correctly.
+    It is also necessary to have a recent lualatex version with
+    variable font support (1.17.0 at least).
+  </p>
+<div class="chunk" id="unnamed-chunk-10"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">grid.newpage</span><span class="hl def">()</span>
+<span class="hl kwd">grid.latex</span><span class="hl def">(</span><span class="hl sng">&quot;t&quot;</span><span class="hl def">,</span>
+           <span class="hl kwc">packages</span><span class="hl def">=</span><span class="hl kwd">fontspecPackage</span><span class="hl def">(</span><span class="hl kwc">font</span><span class="hl def">=fontpath,</span>
+                                    <span class="hl kwc">renderer</span><span class="hl def">=</span><span class="hl sng">&quot;harfbuzz&quot;</span><span class="hl def">,</span>
+                                    <span class="hl kwc">axes</span><span class="hl def">=</span><span class="hl kwd">c</span><span class="hl def">(</span><span class="hl kwc">wght</span><span class="hl def">=</span><span class="hl num">900</span><span class="hl def">)),</span>
+           <span class="hl kwc">gp</span><span class="hl def">=</span><span class="hl kwa">NULL</span><span class="hl def">,</span>
+           <span class="hl kwc">engine</span><span class="hl def">=</span><span class="hl sng">&quot;luahbtex&quot;</span><span class="hl def">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-10-1.png" alt="plot of chunk unnamed-chunk-10" class="plot" /></div></div>
+    <p>
+    The next example demonstrates more complex control over the
+    use of a variable font.  In this case, instead of setting up
+    an overall font weight for the text in the LaTeX fragment, 
+    we specify separate font weights
+    for separate words.
+  </p>
+<div class="chunk" id="unnamed-chunk-11"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">grid.newpage</span><span class="hl def">()</span>
+<span class="hl kwd">grid.latex</span><span class="hl def">(</span><span class="hl sng">r&quot;(
+\addfontfeature{RawFeature={axis={wght=100}}}light
+\addfontfeature{RawFeature={axis={wght=500}}}medium
+\addfontfeature{RawFeature={axis={wght=900}}}dark
+)&quot;</span><span class="hl def">,</span>
+           <span class="hl kwc">packages</span><span class="hl def">=</span><span class="hl kwd">fontspecPackage</span><span class="hl def">(</span><span class="hl kwc">font</span><span class="hl def">=fontpath,</span>
+                                    <span class="hl kwc">renderer</span><span class="hl def">=</span><span class="hl sng">&quot;harfbuzz&quot;</span><span class="hl def">),</span>
+           <span class="hl kwc">gp</span><span class="hl def">=</span><span class="hl kwa">NULL</span><span class="hl def">,</span>
+           <span class="hl kwc">engine</span><span class="hl def">=</span><span class="hl sng">&quot;luahbtex&quot;</span><span class="hl def">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-11-1.png" alt="plot of chunk unnamed-chunk-11" class="plot" /></div></div>
+    <p>
+    Although the example above requires more complex LaTeX code,
+    that code can easily be generated programmatically
+    using basic tools, as demonstrated in the <code>addWeight()</code>
+    function below.
+  </p>
+<div class="chunk" id="unnamed-chunk-12"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl def">addWeight</span> <span class="hl kwb">&lt;-</span> <span class="hl kwa">function</span><span class="hl def">(</span><span class="hl kwc">label</span><span class="hl def">,</span> <span class="hl kwc">weight</span><span class="hl def">) {</span>
+    <span class="hl kwd">paste0</span><span class="hl def">(</span><span class="hl sng">r&quot;(\addfontfeature{RawFeature={axis={wght=)&quot;</span><span class="hl def">,</span>
+           <span class="hl def">weight,</span> <span class="hl sng">&quot;}}}&quot;</span><span class="hl def">, label)</span>
+<span class="hl def">}</span>
+<span class="hl kwd">addWeight</span><span class="hl def">(</span><span class="hl kwd">c</span><span class="hl def">(</span><span class="hl sng">&quot;light&quot;</span><span class="hl def">,</span> <span class="hl sng">&quot;medium&quot;</span><span class="hl def">,</span> <span class="hl sng">&quot;dark&quot;</span><span class="hl def">),</span>
+          <span class="hl kwd">c</span><span class="hl def">(</span><span class="hl num">100</span><span class="hl def">,</span> <span class="hl num">500</span><span class="hl def">,</span> <span class="hl num">900</span><span class="hl def">))</span>
+</pre></div>
+<div class="output"><pre class="knitr r">  [1] "\\addfontfeature{RawFeature={axis={wght=100}}}light" 
+  [2] "\\addfontfeature{RawFeature={axis={wght=500}}}medium"
+  [3] "\\addfontfeature{RawFeature={axis={wght=900}}}dark"
+</pre></div>
+</div></div>
+
+    <h2>
+      <a name="brathmap">5. Variable fonts in plots</a>
+    </h2>
+    <p>
+    Being able to specify axes for variable fonts is interesting and fun,
+    but does it have any application to statistical graphics?
+  </p>
+    <p><a href="#brath-banissi">Brath and Banissi, 2017</a>
+    propose that we can treat
+    font weight as a visual channel that can be used to
+    encode data values, just like the standard visual channels
+    of position, length, colour, etc.
+    For example, we can encode data values
+    as the weight of text labels.
+  </p>
+    <p>
+    As a demonstration of this idea, very loosely based on
+    <a href="#brath-banissi">Brath and Banissi, 2017</a> Figure 21, we will first produce
+    a choropleth map, which encodes data values as the fill colour
+    of map regions, then we will produce an alternative
+    map that encodes data values as the weights of region labels.
+  </p>
+    <p>
+    The following code uses
+    <strong>sf</strong> (<a href="#sf">Pebesma, 2018</a>) and <strong>dplyr</strong> (<a href="#dplyr">Wickham et al., 2023</a>) to
+    set up the data for the map. This consists
+    of youth crime rates (offenders per 100,000 population)
+    in each police district of New Zealand
+    for 2021 (from the
+    <a href="https://www.justice.govt.nz/assets/Youth-Justice-Indicators-2021-FINAL.xlsx">Youth Justice Indicator Report 2021</a>).
+  </p>
+<div class="chunk" id="unnamed-chunk-14"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl def">(sf)</span>
+<span class="hl kwd">library</span><span class="hl def">(dplyr)</span>
+<span class="hl def">crimeDistrict</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">read.csv</span><span class="hl def">(</span><span class="hl sng">&quot;YouthCrime/crime-district.csv&quot;</span><span class="hl def">) |&gt;</span>
+    <span class="hl com">## For joining with map data</span>
+    <span class="hl kwd">mutate</span><span class="hl def">(</span><span class="hl kwc">district</span> <span class="hl def">=</span> <span class="hl kwd">gsub</span><span class="hl def">(</span><span class="hl sng">&quot;Bay Of Plenty&quot;</span><span class="hl def">,</span> <span class="hl sng">&quot;Bay of Plenty&quot;</span><span class="hl def">,</span>
+                           <span class="hl kwd">gsub</span><span class="hl def">(</span><span class="hl sng">&quot;Counties Manukau&quot;</span><span class="hl def">,</span> <span class="hl sng">&quot;Counties/Manukau&quot;</span><span class="hl def">,</span>
+                                <span class="hl def">district)))</span>
+<span class="hl def">crimeDistrict</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">subset</span><span class="hl def">(crimeDistrict,</span>
+                        <span class="hl def">year</span> <span class="hl opt">==</span> <span class="hl num">2021</span><span class="hl def">,</span>
+                        <span class="hl def">district</span> <span class="hl opt">!=</span> <span class="hl sng">&quot;Outside New Zealand (District)&quot;</span><span class="hl def">)</span>
+<span class="hl def">crimeDistrict</span><span class="hl opt">$</span><span class="hl def">yearDate</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">as.Date</span><span class="hl def">(</span><span class="hl kwd">paste0</span><span class="hl def">(crimeDistrict</span><span class="hl opt">$</span><span class="hl def">year,</span> <span class="hl sng">&quot;-06-30&quot;</span><span class="hl def">))</span>
+<span class="hl def">districts</span> <span class="hl kwb">&lt;-</span>
+    <span class="hl kwd">st_read</span><span class="hl def">(</span><span class="hl sng">&quot;SHP/nz-police-district-boundaries-29-april-2021.shp&quot;</span><span class="hl def">,</span>
+            <span class="hl kwc">quiet</span><span class="hl def">=</span><span class="hl num">TRUE</span><span class="hl def">)</span>
+<span class="hl com">## Drop unnecessary Z dimension from some geometries</span>
+<span class="hl def">districts</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">st_zm</span><span class="hl def">(districts)</span>
+<span class="hl def">centroids</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">st_coordinates</span><span class="hl def">(</span><span class="hl kwd">st_centroid</span><span class="hl def">(</span><span class="hl kwd">st_geometry</span><span class="hl def">(districts)))</span>
+<span class="hl def">districts</span><span class="hl opt">$</span><span class="hl def">X</span> <span class="hl kwb">&lt;-</span> <span class="hl def">centroids[,</span><span class="hl num">1</span><span class="hl def">]</span>
+<span class="hl def">districts</span><span class="hl opt">$</span><span class="hl def">Y</span> <span class="hl kwb">&lt;-</span> <span class="hl def">centroids[,</span><span class="hl num">2</span><span class="hl def">]</span>
+<span class="hl def">districts</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">inner_join</span><span class="hl def">(districts,</span> <span class="hl kwd">subset</span><span class="hl def">(crimeDistrict, year</span> <span class="hl opt">==</span> <span class="hl num">2021</span><span class="hl def">),</span>
+                        <span class="hl kwc">by</span><span class="hl def">=</span><span class="hl kwd">join_by</span><span class="hl def">(D_MACRON</span> <span class="hl opt">==</span> <span class="hl def">district))</span>
+</pre></div>
+</div></div>
+    <p>
+  The following code sets up a <strong>ggplot2</strong> plot (<a href="#ggplot2">Wickham, 2016</a>)
+  with the common aspects of the map.
+  This will allow us 
+  to more easily see how the code differs from
+  a choropleth map to the label weight version.
+</p>
+<div class="chunk" id="unnamed-chunk-15"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl def">(ggplot2)</span>
+<span class="hl def">gg</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">ggplot</span><span class="hl def">()</span> <span class="hl opt">+</span>
+    <span class="hl kwd">scale_fill_continuous</span><span class="hl def">(</span><span class="hl kwc">name</span><span class="hl def">=</span><span class="hl sng">&quot;crime rate&quot;</span><span class="hl def">,</span> <span class="hl kwc">high</span><span class="hl def">=</span><span class="hl sng">&quot;#132B43&quot;</span><span class="hl def">,</span> <span class="hl kwc">low</span><span class="hl def">=</span><span class="hl sng">&quot;#56B1F7&quot;</span><span class="hl def">)</span> <span class="hl opt">+</span>
+    <span class="hl kwd">coord_sf</span><span class="hl def">(</span><span class="hl kwc">expand</span><span class="hl def">=</span><span class="hl num">FALSE</span><span class="hl def">)</span> <span class="hl opt">+</span>
+    <span class="hl kwd">xlab</span><span class="hl def">(</span><span class="hl kwa">NULL</span><span class="hl def">)</span> <span class="hl opt">+</span>
+    <span class="hl kwd">ylab</span><span class="hl def">(</span><span class="hl kwa">NULL</span><span class="hl def">)</span> <span class="hl opt">+</span>
+    <span class="hl kwd">ggtitle</span><span class="hl def">(</span><span class="hl sng">&quot;Youth Crime in New Zealand&quot;</span><span class="hl def">,</span>
+            <span class="hl sng">&quot;Distinct offenders per 10,000 pop.&quot;</span><span class="hl def">)</span> <span class="hl opt">+</span>
+    <span class="hl kwd">theme_minimal</span><span class="hl def">()</span> <span class="hl opt">+</span>
+    <span class="hl kwd">theme</span><span class="hl def">(</span><span class="hl kwc">plot.margin</span><span class="hl def">=</span><span class="hl kwd">margin</span><span class="hl def">(</span><span class="hl num">20</span><span class="hl def">,</span> <span class="hl num">0</span><span class="hl def">,</span> <span class="hl num">20</span><span class="hl def">,</span> <span class="hl num">0</span><span class="hl def">),</span>
+          <span class="hl kwc">axis.ticks</span><span class="hl def">=</span><span class="hl kwd">element_blank</span><span class="hl def">(),</span>
+          <span class="hl kwc">axis.text</span><span class="hl def">=</span><span class="hl kwd">element_blank</span><span class="hl def">(),</span>
+          <span class="hl kwc">panel.grid</span><span class="hl def">=</span><span class="hl kwd">element_blank</span><span class="hl def">(),</span>
+          <span class="hl kwc">legend.position</span><span class="hl def">=</span><span class="hl sng">&quot;inside&quot;</span><span class="hl def">,</span>
+          <span class="hl kwc">legend.position.inside</span><span class="hl def">=</span><span class="hl kwd">c</span><span class="hl def">(</span><span class="hl num">1</span><span class="hl def">,</span> <span class="hl num">0</span><span class="hl def">),</span>
+          <span class="hl kwc">legend.justification</span><span class="hl def">=</span><span class="hl kwd">c</span><span class="hl def">(</span><span class="hl num">1</span><span class="hl def">,</span> <span class="hl num">0</span><span class="hl def">),</span>
+          <span class="hl kwc">legend.margin</span><span class="hl def">=</span><span class="hl kwd">margin</span><span class="hl def">(</span><span class="hl num">0</span><span class="hl def">))</span>
+</pre></div>
+</div></div>
+    <p>
+  The following code generates a choropleth map that maps crime rate
+  to the fill colour for each police district.
+  The darker regions represent higher crime rates.
+</p>
+<div class="chunk" id="unnamed-chunk-16"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl def">gg</span> <span class="hl opt">+</span> <span class="hl kwd">geom_sf</span><span class="hl def">(</span><span class="hl kwc">data</span><span class="hl def">=districts,</span> <span class="hl kwd">aes</span><span class="hl def">(</span><span class="hl kwc">fill</span><span class="hl def">=rate),</span> <span class="hl kwc">colour</span><span class="hl def">=</span><span class="hl sng">&quot;white&quot;</span><span class="hl def">,</span> <span class="hl kwc">linewidth</span><span class="hl def">=</span><span class="hl num">.6</span><span class="hl def">)</span> <span class="hl opt">+</span>
+     <span class="hl kwd">coord_sf</span><span class="hl def">(</span><span class="hl kwc">expand</span><span class="hl def">=</span><span class="hl num">FALSE</span><span class="hl def">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-16-1.png" alt="plot of chunk unnamed-chunk-16" class="plot" /></div></div>
+    <p>
+    The benefit of using a map like this is that we (Kiwis) can easily
+    decode the geographic locations of different police districts
+    because the shapes are familiar.
+  </p>
+    <p>
+  One problem with a choropleth map like this is that the police
+  districts differ in terms of size as well as in terms of fill colour.
+  This complicates the comparison of crime rates between police districts
+  because the map regions differ in terms of fill colour <emph>and</emph>
+  size <emph>and</emph> shape.
+  Ideally, in order to effectively compare crime rates between police
+  districts, the map regions would differ only in terms of fill colour
+  (and position).
+  This provides a motivation for an alternative encoding that
+  does not rely on the size and shape of each police district.
+</p>
+    <p>
+  We will develop an alternative map that encodes crime rate as the
+  weight of text labels.
+</p>
+    <p>
+  The first step is to transform the crime rate to a range
+  of font weights.
+  In the case of the
+  <a href="https://fonts.google.com/specimen/Recursive/tester">Recursive font</a>, valid weights range from 300 to 1000.
+</p>
+<div class="chunk" id="unnamed-chunk-17"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl def">districts</span><span class="hl opt">$</span><span class="hl def">rateStd</span> <span class="hl kwb">&lt;-</span> <span class="hl num">300</span> <span class="hl opt">+</span>
+                     <span class="hl num">700</span> <span class="hl opt">*</span> <span class="hl def">(districts</span><span class="hl opt">$</span><span class="hl def">rate</span> <span class="hl opt">-</span> <span class="hl kwd">min</span><span class="hl def">(districts</span><span class="hl opt">$</span><span class="hl def">rate))</span> <span class="hl opt">/</span>
+                            <span class="hl kwd">diff</span><span class="hl def">(</span><span class="hl kwd">range</span><span class="hl def">(districts</span><span class="hl opt">$</span><span class="hl def">rate))</span>
+</pre></div>
+</div></div>
+    <p>
+  There is a <code>geom_latex()</code> in the <strong>xdvir</strong>
+  package, but it does not provide the flexibility that we require
+  to select a local font file, so we will add text labels to
+  each police district using the <strong>gggrid</strong> package
+  (<a href="#gggrid">Murrell, 2022</a>).
+  The following code sets up a function to generate the police
+  district labels as <strong>grid</strong> grobs that will draw LaTeX fragments.
+  We make use of the <code>addWeight()</code> function from above
+  to generate the LaTeX code that controls the font weight for each label.
+</p>
+<div class="chunk" id="unnamed-chunk-18"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl def">(gggrid)</span>
+<span class="hl def">labelTeX</span> <span class="hl kwb">&lt;-</span> <span class="hl kwa">function</span><span class="hl def">(</span><span class="hl kwc">data</span><span class="hl def">,</span> <span class="hl kwc">coords</span><span class="hl def">) {</span>
+    <span class="hl def">label</span> <span class="hl kwb">&lt;-</span> <span class="hl def">data</span><span class="hl opt">$</span><span class="hl def">label</span>
+    <span class="hl def">tex</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">addWeight</span><span class="hl def">(label,</span> <span class="hl kwd">round</span><span class="hl def">(data</span><span class="hl opt">$</span><span class="hl def">weight))</span>
+    <span class="hl kwd">latexGrob</span><span class="hl def">(tex, coords</span><span class="hl opt">$</span><span class="hl def">x, coords</span><span class="hl opt">$</span><span class="hl def">y,</span>
+              <span class="hl kwc">packages</span><span class="hl def">=</span><span class="hl kwd">fontspecPackage</span><span class="hl def">(</span><span class="hl kwc">font</span><span class="hl def">=fontpath,</span>
+                                       <span class="hl kwc">renderer</span><span class="hl def">=</span><span class="hl sng">&quot;harfbuzz&quot;</span><span class="hl def">),</span>
+              <span class="hl kwc">engine</span><span class="hl def">=</span><span class="hl sng">&quot;luahbtex&quot;</span><span class="hl def">,</span>
+              <span class="hl kwc">gp</span><span class="hl def">=</span><span class="hl kwa">NULL</span><span class="hl def">)</span>
+<span class="hl def">}</span>
+</pre></div>
+</div></div>
+    <p>
+  The following code draws the alternative map.
+  We draw police districts as before, but this time they are all filled with the
+  same (light grey) colour.
+  A label is added for each police district with the crime rate encoded
+  as the weight
+  of the label.
+  Bolder labels reflect higher crime rates.
+</p>
+    <p>
+    With this map, we can still see the location of each police district,
+    but now the crime rates are more easily compared because different
+    crime rates are encoded simply as the font weights of the
+    police district labels.
+    It is also easier to identify the different police districts
+    because they are now all labelled.
+  </p>
+<div class="chunk" id="unnamed-chunk-19"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl def">gg</span> <span class="hl opt">+</span> <span class="hl kwd">geom_sf</span><span class="hl def">(</span><span class="hl kwc">data</span><span class="hl def">=districts,</span> <span class="hl kwc">fill</span><span class="hl def">=</span><span class="hl sng">&quot;grey90&quot;</span><span class="hl def">,</span> <span class="hl kwc">colour</span><span class="hl def">=</span><span class="hl sng">&quot;white&quot;</span><span class="hl def">,</span> <span class="hl kwc">linewidth</span><span class="hl def">=</span><span class="hl num">.6</span><span class="hl def">)</span>  <span class="hl opt">+</span>
+     <span class="hl kwd">coord_sf</span><span class="hl def">(</span><span class="hl kwc">expand</span><span class="hl def">=</span><span class="hl num">FALSE</span><span class="hl def">)</span> <span class="hl opt">+</span>
+     <span class="hl kwd">grid_panel</span><span class="hl def">(</span><span class="hl kwc">data</span><span class="hl def">=districts, labelTeX,</span> <span class="hl kwd">aes</span><span class="hl def">(X, Y,</span> <span class="hl kwc">label</span><span class="hl def">=D_MACRON,</span>
+                <span class="hl kwc">weight</span><span class="hl def">=rateStd))</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-19-1.png" alt="plot of chunk unnamed-chunk-19" class="plot" /></div></div>
+    <h2>
+      <a name="summary">6. Acknowledgements</a>
+    </h2>
+    <p>
+    The original suggestion to add support for variable fonts came from
+    Thomas Lin Pedersen, the author of the <strong>marquee</strong> package 
+    (<a href="#marquee">Pedersen and Mitáš, 2025</a>), among many other 
+    things.  The <strong>marquee</strong> package is similar to <strong>xdvir</strong>
+    in that it can generate typeset glyph information, but it
+    works from Markdown input rather than LaTeX fragments.
+  </p>
+    <h2>
+      <a name="requirements">7. Technical requirements</a>
+    </h2>
+    <p>
+    The examples and discussion in this report relate to 
+    the development version of R (to become version 4.6.0) and 
+    'xdvir' version 0.2-0.
+  </p>
+    <p>
+    This report was generated within a Docker container
+    (see <a href="#Resources">Resources</a> section below).
+  </p>
+    <h2>
+      <a name="Resources">8. Resources</a>
+    </h2>
+    <ul>
+      <li>
+      The <a href="variable-fonts.cml">raw source file</a> for this
+      report, a <a href="variable-fonts.xml">valid XML</a>
+      transformation of the source file, a <a href="variable-fonts.Rhtml">'knitr' document</a> generated from
+      the XML file, 
+      two <a href="toc.R">R</a> <a href="bib.R">files</a> and
+      the <a href="variable-fonts.bib">bibtex file</a>
+      that are used to generate the table of contents and reference sections,
+      two <a href="common.xsl">XSL</a> <a href="knitr.xsl">files</a> and an 
+      <a href="knit.R">R file</a> that are used to transform the XML to
+      the 'knitr' document, and a <a href="Makefile">Makefile</a> that
+      contains code for the other transformations and coordinates
+      everything.  
+      These materials are also available
+      on <a href="https://github.com/pmur002/variable-fonts-report/releases/tag/v1">github</a>.
+    </li>
+      <li>
+      This report was generated within a 
+      <a href="https://www.docker.com/">Docker</a> container.
+      The Docker command to build the report is included in the Makefile above.
+      The Docker image for the container is available from
+      <a href="https://hub.docker.com/r/pmur002/variable-fonts-report/">Docker Hub</a>;
+      alternatively, the image can be rebuilt from its 
+      <a href="Dockerfile">Dockerfile</a>.
+    </li>
+    </ul>
+    <h2>How to cite this report</h2>
+    <p>
+    Murrell, P. (2025). "Variable Fonts in R Graphics" 
+    Technical Report 2026-??, Department of Statistics, The University of Auckland. 
+    Version 1.
+    [ <a href="how-to-cite.bib">bib</a> |
+      <a href="">DOI</a> | 
+      <a href="">http</a> ]
+  </p>
+    <h2>
+      <a name="references">9. References</a>
+    </h2>
+    <dl>
+      <dt>
+[<a name="brath-banissi">Brath and Banissi, 2017</a>]
+</dt>
+      <dd>
+Brath, R. and Banissi, E. (2017).
+ Font attributes enrich knowledge maps and information retrieval.
+ <em>Int. J. Digit. Libr.</em>, 18(1):5–24.
+[ <a href="variable-fonts-bib_bib.html#brath-banissi">bib</a> | 
+<a href="http://dx.doi.org/10.1007/s00799-016-0168-4">DOI</a> | 
+<a href="https://doi.org/10.1007/s00799-016-0168-4">http</a> ]
+
+</dd>
+      <dt>
+[<a name="gggrid">Murrell, 2022</a>]
+</dt>
+      <dd>
+Murrell, P. (2022).
+ <em>gggrid: Draw with 'grid' in 'ggplot2'</em>.
+ R package version 0.2-0.
+[ <a href="variable-fonts-bib_bib.html#gggrid">bib</a> | 
+<a href="http://dx.doi.org/10.32614/CRAN.package.gggrid">DOI</a> | 
+<a href="https://CRAN.R-project.org/package=gggrid">http</a> ]
+
+</dd>
+      <dt>
+[<a name="RJ-xdvir">Murrell, 2025a</a>]
+</dt>
+      <dd>
+Murrell, P. (2025a).
+ Rendering latex in r.
+ <em>The R Journal</em>, 17:162--187.
+ https://doi.org/10.32614/RJ-2025-028.
+[ <a href="variable-fonts-bib_bib.html#RJ-xdvir">bib</a> | 
+<a href="http://dx.doi.org/10.32614/RJ-2025-028">DOI</a> ]
+
+</dd>
+      <dt>
+[<a name="xdvir-pkg">Murrell, 2025b</a>]
+</dt>
+      <dd>
+Murrell, P. (2025b).
+ <em>xdvir: Render 'LaTeX' in Plots</em>.
+ R package version 0.2-0.
+[ <a href="variable-fonts-bib_bib.html#xdvir-pkg">bib</a> ]
+
+</dd>
+      <dt>
+[<a name="sf">Pebesma, 2018</a>]
+</dt>
+      <dd>
+Pebesma, E. (2018).
+ Simple Features for R: Standardized Support for Spatial Vector
+  Data.
+ <em>The R Journal</em>, 10(1):439--446.
+[ <a href="variable-fonts-bib_bib.html#sf">bib</a> | 
+<a href="http://dx.doi.org/10.32614/RJ-2018-009">DOI</a> | 
+<a href="https://doi.org/10.32614/RJ-2018-009">http</a> ]
+
+</dd>
+      <dt>
+[<a name="marquee">Pedersen and Mitáš, 2025</a>]
+</dt>
+      <dd>
+Pedersen, T. L. and Mitáš, M. (2025).
+ <em>marquee: Markdown Parser and Renderer for R Graphics</em>.
+ R package version 1.0.0.
+[ <a href="variable-fonts-bib_bib.html#marquee">bib</a> | 
+<a href="http://dx.doi.org/10.32614/CRAN.package.marquee">DOI</a> | 
+<a href="https://CRAN.R-project.org/package=marquee">http</a> ]
+
+</dd>
+      <dt>
+[<a name="R">R Core Team, 2025</a>]
+</dt>
+      <dd>
+R Core Team (2025).
+ <em>R: A Language and Environment for Statistical Computing</em>.
+ R Foundation for Statistical Computing, Vienna, Austria.
+[ <a href="variable-fonts-bib_bib.html#R">bib</a> | 
+<a href="https://www.R-project.org/">http</a> ]
+
+</dd>
+      <dt>
+[<a name="ggplot2">Wickham, 2016</a>]
+</dt>
+      <dd>
+Wickham, H. (2016).
+ <em>ggplot2: Elegant Graphics for Data Analysis</em>.
+ Springer-Verlag New York.
+[ <a href="variable-fonts-bib_bib.html#ggplot2">bib</a> | 
+<a href="https://ggplot2.tidyverse.org">http</a> ]
+
+</dd>
+      <dt>
+[<a name="dplyr">Wickham et al., 2023</a>]
+</dt>
+      <dd>
+Wickham, H., François, R., Henry, L., Müller, K., and Vaughan, D. (2023).
+ <em>dplyr: A Grammar of Data Manipulation</em>.
+ R package version 1.1.4.
+[ <a href="variable-fonts-bib_bib.html#dplyr">bib</a> | 
+<a href="http://dx.doi.org/10.32614/CRAN.package.dplyr">DOI</a> | 
+<a href="https://CRAN.R-project.org/package=dplyr">http</a> ]
+
+</dd>
+    </dl>
+    <hr>
+    <p><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img class="CC" alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png"></a><br><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">This document</span>
+    by <span xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName">Paul
+    Murrell</span> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative
+    Commons Attribution 4.0 International License</a>.
+  </p>
+  </body>
+</html>
