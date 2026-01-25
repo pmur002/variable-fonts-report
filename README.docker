@@ -40,7 +40,7 @@
 
 + To make image available on DockerHub ...
 
-  sudo docker login
+  sudo docker login -u pmur002
   sudo docker push pmur002/variable-fonts-report
 
 + Build report with ...
