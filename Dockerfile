@@ -55,8 +55,9 @@ RUN R/bin/Rscript -e 'library(devtools); install_version("gggrid", "0.2.0", repo
 
 # The main report package(s)
 RUN R/bin/Rscript -e 'library(devtools); install_version("hexView", "0.3.4", repos="https://cran.rstudio.com/")'
-COPY xdvir_0.2-0.tar.gz /tmp
-RUN R/bin/R CMD INSTALL /tmp/xdvir_0.2-0.tar.gz
+# COPY xdvir_0.2-0.tar.gz /tmp
+# RUN R/bin/R CMD INSTALL /tmp/xdvir_0.2-0.tar.gz
+RUN R/bin/Rscript -e 'library(devtools); install_version("xdvir", "0.2-0", repos="https://cran.rstudio.com/")'
 
 RUN apt-get install -y locales && locale-gen en_US.UTF-8
 ENV LANG=en_US.UTF-8
